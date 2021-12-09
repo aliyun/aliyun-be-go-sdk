@@ -1,5 +1,9 @@
 package be
 
-type Response struct {
+import "go/types"
 
+type Response struct {
+	success bool
+	message string
+	result  types.Object
 }

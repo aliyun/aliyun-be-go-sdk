@@ -33,8 +33,14 @@ func TestMultiFilter_GetConditionValue(t *testing.T) {
 	}
 
 	multiFilter := MultiFilter{
-		Filters: []Filter{&filter1, &filter2},
+		Filters:   []Filter{&filter1, &filter2},
 		Connector: FilterConnectorAnd,
 	}
-	fmt.Println(multiFilter.GetConditionValue())
+
+	got := multiFilter.GetConditionValue()
+	fmt.Println(got)
+	want := "key1==value AND key2!=value"
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %v, want %v", got, want)
+	}
 }
