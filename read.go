@@ -115,10 +115,11 @@ type ReadRequest struct {
 	BizName      string
 	FilterClause *FilterClause
 	RecallParams []RecallParam
+	QueryParams  map[string]string
 }
 
 func NewReadRequest(bizName string, returnCount int) *ReadRequest {
-	return &ReadRequest{ReturnCount: returnCount, BizName: bizName}
+	return &ReadRequest{ReturnCount: returnCount, BizName: bizName, QueryParams: map[string]string{}}
 }
 
 func (r *ReadRequest) Validate() error {
@@ -166,25 +167,46 @@ func (r *ReadRequest) AddRecallParam(param *RecallParam) *ReadRequest {
 	return r
 }
 
+func (r *ReadRequest) AddQueryParam(key string, value string) *ReadRequest {
+	r.QueryParams[key] = value
+	return r
+}
+
+func (r *ReadRequest) SetQueryParams(params map[string]string) *ReadRequest {
+	r.QueryParams = params
+	return r
+}
+
 func (r *ReadRequest) BuildUri() url.URL {
 	uri := url.URL{Path: "be"}
 
-	query := uri.Query()
-	query.Set("biz_name", "searcher")
-	query.Set("p", r.BizName)
-	query.Set("s", r.BizName)
-	query.Set("return_count", strconv.Itoa(r.ReturnCount))
-	query.Set("outfmt", "json2")
+	query := map[string]string{}
+	query["biz_name"] = "searcher"
+	query["p"] = r.BizName
+	query["s"] = r.BizName
+	query["return_count"] = strconv.Itoa(r.ReturnCount)
+	query["outfmt"] = "json2"
 
 	if r.FilterClause != nil && r.FilterClause.BuildParams() != "" {
-		query.Set("filter_rule", r.FilterClause.BuildParams())
+		query["filter_rule"] = r.FilterClause.BuildParams()
 	}
 	for _, recallParam := range r.RecallParams {
-		query.Set(recallParam.getTriggerKey(), recallParam.flatTriggers())
+		query[recallParam.getTriggerKey()] = recallParam.flatTriggers()
 		if recallParam.ScorerClause != nil {
-			query.Set(recallParam.getScorerKey(), recallParam.ScorerClause.Clause)
+			query[recallParam.getScorerKey()] = recallParam.ScorerClause.Clause
 		}
 	}
-	uri.RawQuery = query.Encode()
+
+	if len(r.QueryParams) != 0 {
+		for k, v := range r.QueryParams {
+			query[k] = v
+		}
+	}
+
+	var params []string
+	for k, v := range query {
+		params = append(params, k+"="+v)
+	}
+	uri.RawQuery = strings.Join(params[:], "&")
 	return uri
 }

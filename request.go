@@ -3,10 +3,17 @@ package be
 import (
 	"bytes"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
+)
+
+var (
+	defaultRequestTimeout = 10 * time.Second
+	defaultHttpClient     = &http.Client{
+		Timeout: defaultRequestTimeout,
+	}
 )
 
 func request(client *Client, method, uri string, headers map[string]string, body []byte) (*http.Response, error) {
@@ -59,9 +66,8 @@ func realRequest(client *Client, method, uri string, headers map[string]string,
 		if ioErr != nil {
 			return nil, NewBadResponseError(ioErr.Error(), resp.Header, resp.StatusCode)
 		}
-		if jErr := json.Unmarshal(buf, err); jErr != nil {
-			return nil, NewBadResponseError(string(buf), resp.Header, resp.StatusCode)
-		}
+		err.Code = "StatusCodeError"
+		err.Message = "Content:" + string(buf)
 		return nil, err
 	}
 	return resp, nil
