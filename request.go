@@ -20,7 +20,7 @@ func request(client *Client, method, uri string, headers map[string]string, body
 	return realRequest(client, method, uri, headers, body)
 }
 
-// request sends a request to alibaba cloud Log Service.
+// request sends a request to Be Service.
 // @note if error is nil, you must call http.Response.Body.Close() to finalize reader
 func realRequest(client *Client, method, uri string, headers map[string]string,
 	body []byte) (*http.Response, error) {
@@ -47,13 +47,12 @@ func realRequest(client *Client, method, uri string, headers map[string]string,
 		req.Header.Add(k, v)
 	}
 
-	// Get ready to do request
 	resp, err := client.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
-	// Parse the sls error from body.
+	// Parse the be error from body.
 	if resp.StatusCode != http.StatusOK {
 		err := &BadResponseError{}
 		err.HTTPCode = resp.StatusCode

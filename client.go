@@ -50,6 +50,8 @@ func (c *Client) Read(readRequest ReadRequest) (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer httpResp.Body.Close()
+
 	buf, ioErr := ioutil.ReadAll(httpResp.Body)
 	if ioErr != nil {
 		return nil, NewBadResponseError(ioErr.Error(), httpResp.Header, httpResp.StatusCode)
