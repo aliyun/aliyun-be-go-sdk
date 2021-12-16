@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 type Client struct {
@@ -21,6 +22,18 @@ func NewClient(endpoint string, userName string, passWord string) *Client {
 		PassWord:   passWord,
 		httpClient: defaultHttpClient,
 	}
+}
+
+// WithRequestTimeout with custom timeout for a request
+func (c *Client) WithRequestTimeout(timeout time.Duration) *Client {
+	if c.httpClient == defaultHttpClient {
+		c.httpClient = &http.Client{
+			Timeout: timeout,
+		}
+	} else {
+		c.httpClient.Timeout = timeout
+	}
+	return c
 }
 
 func (c *Client) Read(readRequest ReadRequest) (*Response, error) {
@@ -95,38 +108,4 @@ func (c *Client) Write(writeRequest WriteRequest) (*Response, error) {
 			writeResult.Errno, string(buf)), httpResp.Header, httpResp.StatusCode)
 	}
 
-}
-
-// Error defines be error
-type Error struct {
-	HTTPCode int32  `json:"httpCode"`
-	Code     string `json:"errorCode"`
-	Message  string `json:"errorMessage"`
-}
-
-// NewClientError new client error
-func NewClientError(err error) *Error {
-	if err == nil {
-		return nil
-	}
-	if clientError, ok := err.(*Error); ok {
-		return clientError
-	}
-	clientError := new(Error)
-	clientError.HTTPCode = -1
-	clientError.Code = "ClientError"
-	clientError.Message = err.Error()
-	return clientError
-}
-
-func (e Error) String() string {
-	b, err := json.MarshalIndent(e, "", "    ")
-	if err != nil {
-		return ""
-	}
-	return string(b)
-}
-
-func (e Error) Error() string {
-	return e.String()
 }

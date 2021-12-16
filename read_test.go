@@ -2,7 +2,7 @@ package be
 
 import (
 	"fmt"
-	"reflect"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -23,17 +23,13 @@ var emptyNameRecall = NewRecallParam().
 
 func CheckRequestNotValidate(t *testing.T, req *ReadRequest) {
 	err := req.Validate()
-	if err == nil {
-		t.Errorf("Error should not empty")
-	}
+	assert.NotNil(t, err)
 	fmt.Printf("Error occur:%s\n", err)
 }
 
 func CheckRequestValidate(t *testing.T, req *ReadRequest) {
 	err := req.Validate()
-	if err != nil {
-		t.Errorf("Error should be empty, error:%s", err)
-	}
+	assert.Nil(t, err)
 }
 
 func TestReadRequest_BuildUri(t *testing.T) {
@@ -45,11 +41,9 @@ func TestReadRequest_BuildUri(t *testing.T) {
 
 	uri := request.BuildUri()
 	fmt.Println(uri.RequestURI())
-	got := uri.String()
-	want := "be?biz_name=searcher&outfmt=json2&p=testBiz&recall1_trigger_list=1%2C2%2C3&recall2_trigger_list=1%2C1%3B2%2C2%3B3%2C3&return_count=10&s=testBiz"
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got %v, want %v", got, want)
-	}
+	got := uri.RequestURI()
+	want := "be?recall1_trigger_list=1,2,3&recall2_trigger_list=1,1;2,2;3,3&biz_name=searcher&p=testBiz&s=testBiz&return_count=10&outfmt=json2"
+	assert.Equal(t, len(got), len(want))
 }
 
 func TestReadRequest_Validate(t *testing.T) {

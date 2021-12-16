@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	defaultRequestTimeout = 10 * time.Second
+	defaultRequestTimeout = 3 * time.Second
 	defaultHttpClient     = &http.Client{
 		Timeout: defaultRequestTimeout,
 	}
@@ -26,10 +26,6 @@ func realRequest(client *Client, method, uri string, headers map[string]string,
 	body []byte) (*http.Response, error) {
 
 	headers["Host"] = client.Endpoint
-
-	if body != nil {
-		// TODO set body
-	}
 
 	digest, err := signature(client)
 	if err != nil {
@@ -59,15 +55,15 @@ func realRequest(client *Client, method, uri string, headers map[string]string,
 
 	// Parse the sls error from body.
 	if resp.StatusCode != http.StatusOK {
-		err := &Error{}
-		err.HTTPCode = (int32)(resp.StatusCode)
+		err := &BadResponseError{}
+		err.HTTPCode = resp.StatusCode
 		defer resp.Body.Close()
 		buf, ioErr := ioutil.ReadAll(resp.Body)
 		if ioErr != nil {
 			return nil, NewBadResponseError(ioErr.Error(), resp.Header, resp.StatusCode)
 		}
-		err.Code = "StatusCodeError"
-		err.Message = "Content:" + string(buf)
+		err.RespBody = string(buf)
+		err.RespHeader = resp.Header
 		return nil, err
 	}
 	return resp, nil
