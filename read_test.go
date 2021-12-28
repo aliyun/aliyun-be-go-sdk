@@ -33,7 +33,6 @@ func CheckRequestValidate(t *testing.T, req *ReadRequest) {
 }
 
 func TestReadRequest_BuildUri(t *testing.T) {
-	// request
 	request := NewReadRequest("testBiz", 10).
 		AddRecallParam(recall1).
 		AddRecallParam(recall2)

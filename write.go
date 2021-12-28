@@ -17,16 +17,18 @@ const (
 
 type WriteRequest struct {
 	WriteType    WriteType         `json:"write_type"`
+	InstanceName string            `json:"instance_name"`
 	TableName    string            `json:"table_name"`
 	Contents     map[string]string `json:"contents"`
-	PartitionKey string            `json:"partition_key"`
+	PrimaryKey   string            `json:"primary_key"`
 	QueryParams  map[string]string `json:"query_params"`
 }
 
-func NewWriteRequest(writeType WriteType, tableName string, partitionKey string, contents map[string]string) *WriteRequest {
+func NewWriteRequest(writeType WriteType, instanceName string, tableName string, primaryKey string, contents map[string]string) *WriteRequest {
 	return &WriteRequest{WriteType: writeType,
+		InstanceName: instanceName,
 		TableName:    tableName,
-		PartitionKey: partitionKey,
+		PrimaryKey:   primaryKey,
 		Contents:     contents,
 		QueryParams:  map[string]string{},
 	}
@@ -38,26 +40,30 @@ func (r *WriteRequest) AddContent(key string, value string) *WriteRequest {
 }
 
 func (r *WriteRequest) Validate() error {
+	if r.InstanceName == "" {
+		return InvalidParamsError{"Instance name not set"}
+	}
+
 	if r.TableName == "" {
-		return InvalidParamsError{"Empty table name"}
+		return InvalidParamsError{"Table name not set"}
 	}
 	if len(r.Contents) == 0 {
 		return InvalidParamsError{"Empty contents"}
 	}
-	if r.PartitionKey == "" {
+	if r.PrimaryKey == "" {
 		return InvalidParamsError{"Partition key not set"}
 	}
-	partitionKeyExist := false
+	primaryKeyExist := false
 	for k, v := range r.Contents {
 		if k == "" || v == "" {
 			return InvalidParamsError{fmt.Sprintf("Key or value is empty for kv pair[%s][%s]", k, v)}
 		}
-		if k == r.PartitionKey {
-			partitionKeyExist = true
+		if k == r.PrimaryKey {
+			primaryKeyExist = true
 		}
 	}
-	if !partitionKeyExist {
-		return InvalidParamsError{fmt.Sprintf("Partition key[%s] not exist in contents", r.PartitionKey)}
+	if !primaryKeyExist {
+		return InvalidParamsError{fmt.Sprintf("Partition key[%s] not exist in contents", r.PrimaryKey)}
 	}
 	return nil
 }
@@ -75,36 +81,41 @@ func (r *WriteRequest) SetQueryParams(params map[string]string) *WriteRequest {
 func (r *WriteRequest) BuildUri() url.URL {
 	uri := url.URL{Path: "sendmsg"}
 
-	var builder strings.Builder
 	var separator byte = 31
 	var lineBreak byte = '\n'
 
+	var contentBuilder strings.Builder
+	var primaryKeyValue string
+	for k, v := range r.Contents {
+		if r.PrimaryKey == k {
+			primaryKeyValue = v
+			continue
+		}
+		contentBuilder.WriteString(k)
+		contentBuilder.WriteString("=")
+		contentBuilder.WriteString(v)
+		contentBuilder.WriteByte(separator)
+		contentBuilder.WriteByte(lineBreak)
+	}
+
+	var builder strings.Builder
 	builder.WriteString("CMD=")
 	builder.WriteString(strings.ToLower(string(r.WriteType)))
 	builder.WriteByte(separator)
 	builder.WriteByte(lineBreak)
-
-	var partitionKeyValue string
-	for k, v := range r.Contents {
-		builder.WriteString(k)
-		builder.WriteString("=")
-		builder.WriteString(v)
-		builder.WriteByte(separator)
-		builder.WriteByte(lineBreak)
-		if r.PartitionKey == k {
-			partitionKeyValue = v
-		}
-	}
+	builder.WriteString(r.PrimaryKey + "=" + primaryKeyValue)
+	builder.WriteByte(separator)
+	builder.WriteByte(lineBreak)
 
 	h := fnv.New64a()
-	_, err := h.Write([]byte(partitionKeyValue))
+	_, err := h.Write([]byte(primaryKeyValue))
 	if err != nil {
 		//TODO add log
 	}
 	hashValue := h.Sum64()
 
 	query := uri.Query()
-	query.Add("table", r.TableName)
+	query.Add("table", r.InstanceName+"_"+r.TableName)
 	query.Add("h", strconv.Itoa(int(hashValue)))
 	query.Add("msg", builder.String())
 

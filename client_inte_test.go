@@ -29,9 +29,26 @@ func TestClient_Read(t *testing.T) {
 }
 
 func TestClient_Write(t *testing.T) {
-	tableName := "silantest"
-	request := NewWriteRequest(WriteTypeAdd, tableName, "id", map[string]string{})
-	request.AddContent("id", "10000")
+	tableName := "aime_example_expose_2"
+	instanceName := "be-cn-7e22hft5l001"
+	request := NewWriteRequest(WriteTypeAdd, instanceName, tableName, "user_id", map[string]string{})
+	request.AddContent("user_id", "u0003")
+	request.AddContent("item_id", "10001")
+	request.AddContent("time", "1640242662")
+	request.AddQueryParam("host", "10.0.133.234:80")
+	resp, err := client.Write(*request)
+	assert.Nil(t, err)
+
+	PrintResult(resp)
+	assert.Empty(t, resp)
+}
+
+func TestClient_Write_Delete(t *testing.T) {
+	tableName := "aime_example_expose_2"
+	instanceName := "be-cn-7e22hft5l001"
+	request := NewWriteRequest(WriteTypeDelete, instanceName, tableName, "user_id", map[string]string{})
+	request.AddContent("user_id", "u0003")
+	request.AddContent("item_id", "10001")
 	request.AddQueryParam("host", "10.0.133.234:80")
 	resp, err := client.Write(*request)
 	assert.Nil(t, err)
