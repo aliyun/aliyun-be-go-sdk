@@ -59,6 +59,7 @@ type RecallParam struct {
 	RecallName   string
 	TriggerItems []string
 	RecallType   RecallType
+	ReturnCount  int
 	ScorerClause *ScorerClause
 }
 
@@ -66,8 +67,18 @@ func NewRecallParam() *RecallParam {
 	return &RecallParam{}
 }
 
+func (p *RecallParam) Validate() error {
+	if len(p.TriggerItems) == 0 {
+		return InvalidParamsError{fmt.Sprintf("Empty trigger items for recall[%s]", p.RecallName)}
+	}
+	if p.RecallName != "" && p.ReturnCount < 0 {
+		return InvalidParamsError{fmt.Sprintf("Return count should be greater than 0 for recall[%s]", p.RecallName)}
+	}
+	return nil
+}
+
 func (p *RecallParam) SetRecallName(name string) *RecallParam {
-	p.RecallName = name
+	p.RecallName = strings.TrimSpace(name)
 	return p
 }
 
@@ -110,6 +121,14 @@ func (p *RecallParam) getScorerKey() string {
 	}
 }
 
+func (p RecallParam) getReturnCountKey() string {
+	if p.RecallName == "" {
+		return "return_count"
+	} else {
+		return p.RecallName + "_return_count"
+	}
+}
+
 type ReadRequest struct {
 	ReturnCount  int
 	BizName      string
@@ -134,6 +153,10 @@ func (r *ReadRequest) Validate() error {
 	}
 	recallNames := map[string]bool{}
 	for _, param := range r.RecallParams {
+		recallError := param.Validate()
+		if recallError != nil {
+			return recallError
+		}
 		if recallNames[param.RecallName] {
 			return InvalidParamsError{fmt.Sprintf("Duplicate recall name[%s] in RecallParams", param.RecallName)}
 		}
@@ -192,6 +215,9 @@ func (r *ReadRequest) BuildUri() url.URL {
 	}
 	for _, recallParam := range r.RecallParams {
 		query[recallParam.getTriggerKey()] = recallParam.flatTriggers()
+		if recallParam.RecallName != "" {
+			query[recallParam.getReturnCountKey()] = strconv.Itoa(recallParam.ReturnCount)
+		}
 		if recallParam.ScorerClause != nil {
 			query[recallParam.getScorerKey()] = recallParam.ScorerClause.Clause
 		}

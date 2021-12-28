@@ -106,6 +106,7 @@ func (r *WriteRequest) BuildUri() url.URL {
 	builder.WriteString(r.PrimaryKey + "=" + primaryKeyValue)
 	builder.WriteByte(separator)
 	builder.WriteByte(lineBreak)
+	builder.WriteString(contentBuilder.String())
 
 	h := fnv.New64a()
 	_, err := h.Write([]byte(primaryKeyValue))
