@@ -115,9 +115,9 @@ func (p *RecallParam) getTriggerKey() string {
 
 func (p *RecallParam) getScorerKey() string {
 	if p.RecallName == "" {
-		return "scorer_rule"
+		return "score_rule"
 	} else {
-		return p.RecallName + "_scorer_rule"
+		return p.RecallName + "_score_rule"
 	}
 }
 
