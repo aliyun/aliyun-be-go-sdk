@@ -13,6 +13,23 @@ type MatchItem struct {
 	FieldValues [][]interface{} `json:"field_values"`
 }
 
+func (m MatchItem) getItems(i int) map[string]interface{} {
+	count := m.getResultCount()
+	if i >= count || i < 0 {
+		return nil
+	}
+	values := m.FieldValues[i]
+	itemMap := make(map[string]interface{})
+	for i := 0; i < len(m.FieldNames); i++ {
+		itemMap[m.FieldNames[i]] = values[i]
+	}
+	return itemMap
+}
+
+func (m MatchItem) getResultCount() int {
+	return len(m.FieldValues)
+}
+
 type ReadResult struct {
 	ErrorCode    int       `json:"error_code"`
 	ErrorMessage string    `json:"error_message"`

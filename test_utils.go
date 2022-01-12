@@ -6,6 +6,6 @@ import (
 )
 
 func PrintResult(i interface{}) {
-	iByte, _ := json.Marshal(i)
+	iByte, _ := json.MarshalIndent(i, "", "\t")
 	fmt.Println(string(iByte))
 }

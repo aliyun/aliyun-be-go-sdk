@@ -30,14 +30,14 @@ const (
 )
 
 type SingleFilter struct {
-	Left     string
-	Operator FilterOperator
-	Right    string
+	Left     string         `json:"left"`
+	Operator FilterOperator `json:"operator"`
+	Right    string         `json:"right"`
 }
 
 type MultiFilter struct {
-	Filters   []Filter
-	Connector FilterConnector
+	Filters   []Filter        `json:"filters"`
+	Connector FilterConnector `json:"connector"`
 }
 
 func (f *SingleFilter) Validate() error {

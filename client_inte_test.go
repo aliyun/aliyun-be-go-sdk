@@ -2,30 +2,39 @@ package be
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"testing"
 )
 
 var client = NewClient("http://curl-proxy-vpc-pre.airec.aliyun-inc.com", "test", "test")
+var queryParams = map[string]string{}
 
-func TestClient_Read(t *testing.T) {
-	bizName := "silan_test_pai"
-	returnCount := 10
-	request := NewReadRequest(bizName, returnCount)
-	testRecallParams := NewRecallParam().
-		SetTriggerItems([]string{"1:1", "2:1"}).
-		SetRecallType(RecallTypeX2i)
-	request.AddRecallParam(testRecallParams).
-		AddQueryParam("host", "10.2.207.13:10579")
+func TestMain(m *testing.M) {
+	queryParams["host"] = "10.2.207.14:16832"
+	m.Run()
+}
 
+func TestClient_Read_Vector(t *testing.T) {
+	fileName := "testdata/inte_test_requests/vector_request.json"
+	request, err := initTestReadRequest(fileName)
+	assert.Nil(t, err, "Failed to init request from file:"+fileName)
 	resp, err := client.Read(*request)
 	assert.Nil(t, err)
+	assert.Equal(t, request.ReturnCount, len(resp.Result.MatchItems.FieldValues))
+}
 
-	respByte, _ := json.Marshal(resp)
-	fmt.Println(string(respByte))
-	assert.NotEmpty(t, resp.Result)
-	assert.NotNil(t, resp.Result.MatchItems)
+func TestClient_Read_VectorClause(t *testing.T) {
+	fileName := "testdata/inte_test_requests/vector_request_with_filter.json"
+	request, err := initTestReadRequest(fileName)
+	assert.Nil(t, err, "Failed to init request from file:"+fileName)
+	resp, err := client.Read(*request)
+	assert.Nil(t, err)
+	items := resp.Result.MatchItems
+	for i := 0; i < items.getResultCount(); i++ {
+		assert.Equal(t, "100", items.getItems(i)["field1"])
+	}
+
 }
 
 func TestClient_Write(t *testing.T) {
@@ -55,4 +64,20 @@ func TestClient_Write_Delete(t *testing.T) {
 
 	PrintResult(resp)
 	assert.Empty(t, resp)
+}
+
+func initTestReadRequest(requestFilePath string) (*ReadRequest, error) {
+	content, rErr := ioutil.ReadFile(requestFilePath)
+	if rErr != nil {
+		return nil, rErr
+	}
+
+	readRequest := &ReadRequest{}
+	jErr := json.Unmarshal(content, readRequest)
+	if jErr != nil {
+		return nil, jErr
+	}
+	readRequest.QueryParams = queryParams
+	PrintResult(readRequest)
+	return readRequest, nil
 }

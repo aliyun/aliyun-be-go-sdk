@@ -10,7 +10,7 @@ import (
 )
 
 func TestClient_Read_Success(t *testing.T) {
-	fileName := "testdata/read_result_success.json"
+	fileName := "testdata/mock_result/read_result_success.json"
 	ts, _, err := initHttpTestServer(fileName)
 	assert.Nil(t, err, "Failed to init server for:"+fileName)
 	testClient := NewClient(ts.URL, "test", "test")
@@ -24,7 +24,7 @@ func TestClient_Read_Success(t *testing.T) {
 }
 
 func TestClient_Read_BizNotExist(t *testing.T) {
-	fileName := "testdata/read_result_biz_not_exist.json"
+	fileName := "testdata/mock_result/read_result_biz_not_exist.json"
 	ts, tResp, err := initHttpTestServer(fileName)
 	assert.Nil(t, err, "Failed to init server for:"+fileName)
 	testClient := NewClient(ts.URL, "test", "test")
@@ -38,7 +38,7 @@ func TestClient_Read_BizNotExist(t *testing.T) {
 }
 
 func TestClient_Write_Success(t *testing.T) {
-	fileName := "testdata/write_result_success.json"
+	fileName := "testdata/mock_result/write_result_success.json"
 	ts, _, err := initHttpTestServer(fileName)
 	assert.Nil(t, err, "Failed to init server for:"+fileName)
 	testClient := NewClient(ts.URL, "test", "test")
@@ -49,7 +49,7 @@ func TestClient_Write_Success(t *testing.T) {
 }
 
 func TestClient_Write_Failed(t *testing.T) {
-	fileName := "testdata/write_result_failed.json"
+	fileName := "testdata/mock_result/write_result_failed.json"
 	ts, tResp, err := initHttpTestServer(fileName)
 	assert.Nil(t, err, "Failed to init server for:"+fileName)
 	testClient := NewClient(ts.URL, "test", "test")

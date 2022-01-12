@@ -15,8 +15,8 @@ const (
 )
 
 type FilterClause struct {
-	Filter Filter
-	Clause string
+	Filter Filter `json:"filter"`
+	Clause string `json:"clause"`
 }
 
 func NewFilterClause(filter Filter) *FilterClause {
@@ -48,7 +48,7 @@ func (c *FilterClause) BuildParams() string {
 }
 
 type ScorerClause struct {
-	Clause string
+	Clause string `json:"clause"`
 }
 
 func NewScorerClause(clause string) *ScorerClause {
@@ -56,11 +56,11 @@ func NewScorerClause(clause string) *ScorerClause {
 }
 
 type RecallParam struct {
-	RecallName   string
-	TriggerItems []string
-	RecallType   RecallType
-	ReturnCount  int
-	ScorerClause *ScorerClause
+	RecallName   string        `json:"recall_name"`
+	TriggerItems []string      `json:"trigger_items"`
+	RecallType   RecallType    `json:"recall_type"`
+	ReturnCount  int           `json:"return_count"`
+	ScorerClause *ScorerClause `json:"scorer_clause"`
 }
 
 func NewRecallParam() *RecallParam {
@@ -130,11 +130,11 @@ func (p RecallParam) getReturnCountKey() string {
 }
 
 type ReadRequest struct {
-	ReturnCount  int
-	BizName      string
-	FilterClause *FilterClause
-	RecallParams []RecallParam
-	QueryParams  map[string]string
+	ReturnCount  int               `json:"return_count"`
+	BizName      string            `json:"biz_name"`
+	FilterClause *FilterClause     `json:"filter_clause"`
+	RecallParams []RecallParam     `json:"recall_params"`
+	QueryParams  map[string]string `json:"query_params"`
 }
 
 func NewReadRequest(bizName string, returnCount int) *ReadRequest {
