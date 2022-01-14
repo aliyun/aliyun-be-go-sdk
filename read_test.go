@@ -8,7 +8,7 @@ import (
 
 var recall1 = NewRecallParam().
 	SetRecallName("recall1").
-	SetRecallType(RecallTypeX2i).
+	SetRecallType(RecallTypeX2I).
 	SetTriggerItems([]string{"1", "2", "3"})
 
 var recall2 = NewRecallParam().

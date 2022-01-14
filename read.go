@@ -10,7 +10,7 @@ import (
 type RecallType string
 
 const (
-	RecallTypeX2i    RecallType = "X2i"
+	RecallTypeX2I    RecallType = "X2I"
 	RecallTypeVector RecallType = "Vector"
 )
 
@@ -45,6 +45,22 @@ func (c *FilterClause) BuildParams() string {
 		queryClause = c.Filter.GetConditionValue()
 	}
 	return url.QueryEscape(queryClause)
+}
+
+type ExposureClause struct {
+	Name   string   `json:"name"`
+	Values []string `json:"values"`
+}
+
+func NewExposureClause(values []string) *ExposureClause {
+	return &ExposureClause{Name: "user_id", Values: values}
+}
+
+func (c *ExposureClause) BuildParams() string {
+	if len(c.Values) == 0 {
+		return ""
+	}
+	return strings.Join(c.Values[:], ",")
 }
 
 type ScorerClause struct {
@@ -98,7 +114,7 @@ func (p *RecallParam) SetScorerClause(clause *ScorerClause) *RecallParam {
 }
 
 func (p *RecallParam) flatTriggers() string {
-	if p.RecallType == RecallTypeX2i {
+	if p.RecallType == RecallTypeX2I {
 		return strings.Join(p.TriggerItems[:], ",")
 	} else {
 		return strings.Join(p.TriggerItems[:], ";")
@@ -130,11 +146,12 @@ func (p RecallParam) getReturnCountKey() string {
 }
 
 type ReadRequest struct {
-	ReturnCount  int               `json:"return_count"`
-	BizName      string            `json:"biz_name"`
-	FilterClause *FilterClause     `json:"filter_clause"`
-	RecallParams []RecallParam     `json:"recall_params"`
-	QueryParams  map[string]string `json:"query_params"`
+	ReturnCount    int               `json:"return_count"`
+	BizName        string            `json:"biz_name"`
+	FilterClause   *FilterClause     `json:"filter_clause"`
+	RecallParams   []RecallParam     `json:"recall_params"`
+	ExposureClause *ExposureClause   `json:"exposure_clause"`
+	QueryParams    map[string]string `json:"query_params"`
 }
 
 func NewReadRequest(bizName string, returnCount int) *ReadRequest {
@@ -219,8 +236,12 @@ func (r *ReadRequest) BuildUri() url.URL {
 			query[recallParam.getReturnCountKey()] = strconv.Itoa(recallParam.ReturnCount)
 		}
 		if recallParam.ScorerClause != nil {
-			query[recallParam.getScorerKey()] = recallParam.ScorerClause.Clause
+			query[recallParam.getScorerKey()] = url.QueryEscape(recallParam.ScorerClause.Clause)
 		}
+	}
+
+	if r.ExposureClause != nil {
+		query[r.ExposureClause.Name] = r.ExposureClause.BuildParams()
 	}
 
 	if len(r.QueryParams) != 0 {
@@ -234,5 +255,6 @@ func (r *ReadRequest) BuildUri() url.URL {
 		params = append(params, k+"="+v)
 	}
 	uri.RawQuery = strings.Join(params[:], "&")
+	fmt.Println(uri.RawQuery)
 	return uri
 }

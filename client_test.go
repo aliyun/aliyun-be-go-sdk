@@ -71,7 +71,7 @@ func initReadRequest() *ReadRequest {
 	request := NewReadRequest("test", 10)
 	testRecallParams := NewRecallParam().
 		SetTriggerItems([]string{"1:1", "2:1"}).
-		SetRecallType(RecallTypeX2i)
+		SetRecallType(RecallTypeX2I)
 	request.AddRecallParam(testRecallParams)
 	return request
 }

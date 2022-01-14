@@ -15,26 +15,12 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
-func TestClient_Read_Vector(t *testing.T) {
-	fileName := "testdata/inte_test_requests/vector_request.json"
-	request, err := initTestReadRequest(fileName)
-	assert.Nil(t, err, "Failed to init request from file:"+fileName)
-	resp, err := client.Read(*request)
-	assert.Nil(t, err)
-	assert.Equal(t, request.ReturnCount, len(resp.Result.MatchItems.FieldValues))
-}
-
-func TestClient_Read_VectorClause(t *testing.T) {
-	fileName := "testdata/inte_test_requests/vector_request_with_filter.json"
-	request, err := initTestReadRequest(fileName)
-	assert.Nil(t, err, "Failed to init request from file:"+fileName)
-	resp, err := client.Read(*request)
-	assert.Nil(t, err)
-	items := resp.Result.MatchItems
-	for i := 0; i < items.getResultCount(); i++ {
-		assert.Equal(t, "100", items.getItems(i)["field1"])
-	}
-
+func TestClient_ReadVectorFilterClause(t *testing.T) {
+	inteTestRead(t, "testdata/inte_test_requests/vector_request.json")
+	inteTestRead(t, "testdata/inte_test_requests/vector_request_with_filter.json")
+	inteTestRead(t, "testdata/inte_test_requests/x2i_request.json")
+	inteTestRead(t, "testdata/inte_test_requests/x2i_request_with_exposure.json")
+	inteTestRead(t, "testdata/inte_test_requests/multi_request.json")
 }
 
 func TestClient_Write(t *testing.T) {
@@ -66,18 +52,55 @@ func TestClient_Write_Delete(t *testing.T) {
 	assert.Empty(t, resp)
 }
 
-func initTestReadRequest(requestFilePath string) (*ReadRequest, error) {
-	content, rErr := ioutil.ReadFile(requestFilePath)
-	if rErr != nil {
-		return nil, rErr
-	}
+func inteTestRead(t *testing.T, paramPath string) {
+	content, rErr := ioutil.ReadFile(paramPath)
+	assert.Nil(t, rErr)
 
-	readRequest := &ReadRequest{}
-	jErr := json.Unmarshal(content, readRequest)
-	if jErr != nil {
-		return nil, jErr
-	}
+	params := &InteTestReadParams{}
+	jErr := json.Unmarshal(content, params)
+	assert.Nil(t, jErr)
+
+	readRequest := params.Request
 	readRequest.QueryParams = queryParams
-	PrintResult(readRequest)
-	return readRequest, nil
+
+	resp, err := client.Read(*readRequest)
+	assert.Nil(t, err)
+	PrintResult(resp)
+
+	checkers := params.Checkers
+	if len(checkers) == 0 {
+		return
+	}
+	for _, checker := range checkers {
+		result := checker.check(resp.Result.MatchItems)
+		assert.True(t, result, "Failed to check items for checker:"+ToJson(checker))
+	}
+}
+
+type InteTestReadParams struct {
+	Request  *ReadRequest      `json:"request"`
+	Checkers []InteTestChecker `json:"checkers"`
+}
+
+type InteTestChecker struct {
+	Field  string   `json:"field"`
+	Values []string `json:"values"`
+}
+
+func (c InteTestChecker) check(items *MatchItem) bool {
+	for i := 0; i < items.getResultCount(); i++ {
+		item := items.getItems(i)
+		itemValue := item[c.Field]
+		checkerResult := false
+		for _, checkerValue := range c.Values {
+			if checkerValue == itemValue {
+				checkerResult = true
+				break
+			}
+		}
+		if !checkerResult {
+			return false
+		}
+	}
+	return true
 }
