@@ -39,9 +39,8 @@ func TestReadRequest_BuildUri(t *testing.T) {
 	CheckRequestValidate(t, request)
 
 	uri := request.BuildUri()
-	fmt.Println(uri.RequestURI())
 	got := uri.RequestURI()
-	want := "be?recall1_trigger_list=1,2,3&recall2_trigger_list=1,1;2,2;3,3&biz_name=searcher&p=testBiz&s=testBiz&return_count=10&outfmt=json2"
+	want := "be?biz_name=searcher&recall1_trigger_list=1,2,3&recall1_return_count=0&recall2_return_count=0&p=testBiz&s=testBiz&return_count=10&outfmt=json2&recall2_trigger_list=1,1;2,2;3,3"
 	assert.Equal(t, len(got), len(want))
 }
 

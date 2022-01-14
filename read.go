@@ -255,6 +255,5 @@ func (r *ReadRequest) BuildUri() url.URL {
 		params = append(params, k+"="+v)
 	}
 	uri.RawQuery = strings.Join(params[:], "&")
-	fmt.Println(uri.RawQuery)
 	return uri
 }
