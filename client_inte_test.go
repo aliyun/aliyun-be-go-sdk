@@ -56,7 +56,7 @@ func inteTestRead(t *testing.T, paramPath string) {
 	content, rErr := ioutil.ReadFile(paramPath)
 	assert.Nil(t, rErr)
 
-	params := &InteTestReadParams{}
+	params := &TestReadParams{}
 	jErr := json.Unmarshal(content, params)
 	assert.Nil(t, jErr)
 
@@ -77,17 +77,17 @@ func inteTestRead(t *testing.T, paramPath string) {
 	}
 }
 
-type InteTestReadParams struct {
-	Request  *ReadRequest      `json:"request"`
-	Checkers []InteTestChecker `json:"checkers"`
+type TestReadParams struct {
+	Request  *ReadRequest  `json:"request"`
+	Checkers []TestChecker `json:"checkers"`
 }
 
-type InteTestChecker struct {
+type TestChecker struct {
 	Field  string   `json:"field"`
 	Values []string `json:"values"`
 }
 
-func (c InteTestChecker) check(items *MatchItem) bool {
+func (c TestChecker) check(items *MatchItem) bool {
 	for i := 0; i < items.getResultCount(); i++ {
 		item := items.getItems(i)
 		itemValue := item[c.Field]
