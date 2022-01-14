@@ -16,11 +16,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestClient_ReadVectorFilterClause(t *testing.T) {
-	inteTestRead(t, "testdata/inte_test_requests/vector_request.json")
-	inteTestRead(t, "testdata/inte_test_requests/vector_request_with_filter.json")
-	inteTestRead(t, "testdata/inte_test_requests/x2i_request.json")
-	inteTestRead(t, "testdata/inte_test_requests/x2i_request_with_exposure.json")
-	inteTestRead(t, "testdata/inte_test_requests/multi_request.json")
+	inteTestRead(t, "testdata/test_requests/vector_request.json")
+	inteTestRead(t, "testdata/test_requests/vector_request_with_filter.json")
+	inteTestRead(t, "testdata/test_requests/x2i_request.json")
+	inteTestRead(t, "testdata/test_requests/x2i_request_with_exposure.json")
+	inteTestRead(t, "testdata/test_requests/multi_request.json")
 }
 
 func TestClient_Write(t *testing.T) {
