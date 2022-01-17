@@ -1,0 +1,4 @@
+{
+  "code" : 200,
+  "body" : "{\"error_code\":0,\"error_message\":\"none\",\"match_items\":{\"field_names\":[\"__score__\",\"id\",\"match_type\",\"score\",\"trigger_id\",\"trigger_score\"],\"field_values\":[[1.0,\"24\",1,0.0,\"1\",1.0],[1.0,\"82\",1,0.0,\"2\",1.0]]}}"
+}
