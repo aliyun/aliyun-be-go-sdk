@@ -9,11 +9,13 @@ import (
 var recall1 = NewRecallParam().
 	SetRecallName("recall1").
 	SetRecallType(RecallTypeX2I).
+	SetReturnCount(10).
 	SetTriggerItems([]string{"1", "2", "3"})
 
 var recall2 = NewRecallParam().
 	SetRecallName("recall2").
 	SetRecallType(RecallTypeVector).
+	SetReturnCount(10).
 	SetTriggerItems([]string{"1,1", "2,2", "3,3"})
 
 var emptyNameRecall = NewRecallParam().
@@ -40,7 +42,7 @@ func TestReadRequest_BuildUri(t *testing.T) {
 
 	uri := request.BuildUri()
 	got := uri.RequestURI()
-	want := "be?biz_name=searcher&recall1_trigger_list=1,2,3&recall1_return_count=0&recall2_return_count=0&p=testBiz&s=testBiz&return_count=10&outfmt=json2&recall2_trigger_list=1,1;2,2;3,3"
+	want := "be?biz_name=searcher&recall1_trigger_list=1,2,3&recall1_return_count=10&recall2_return_count=10&p=testBiz&s=testBiz&return_count=10&outfmt=json2&recall2_trigger_list=1,1;2,2;3,3"
 	assert.Equal(t, len(got), len(want))
 }
 

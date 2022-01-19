@@ -13,7 +13,7 @@ func TestSingleFilter_GetConditionValue(t *testing.T) {
 		Right:    "value",
 	}
 	got := filter.GetConditionValue()
-	want := "key==value"
+	want := "key=value"
 	assert.Equal(t, got, want)
 }
 
@@ -37,6 +37,6 @@ func TestMultiFilter_GetConditionValue(t *testing.T) {
 
 	got := multiFilter.GetConditionValue()
 	fmt.Println(got)
-	want := "key1==value AND key2!=value"
+	want := "key1=value AND key2!=value"
 	assert.Equal(t, got, want)
 }
