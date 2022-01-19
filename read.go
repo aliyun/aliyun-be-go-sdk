@@ -87,7 +87,7 @@ func (p *RecallParam) Validate() error {
 	if len(p.TriggerItems) == 0 {
 		return InvalidParamsError{fmt.Sprintf("Empty trigger items for recall[%s]", p.RecallName)}
 	}
-	if p.RecallName != "" && p.ReturnCount < 0 {
+	if p.RecallName != "" && p.ReturnCount <= 0 {
 		return InvalidParamsError{fmt.Sprintf("Return count should be greater than 0 for recall[%s]", p.RecallName)}
 	}
 	return nil
@@ -110,6 +110,11 @@ func (p *RecallParam) SetRecallType(recallType RecallType) *RecallParam {
 
 func (p *RecallParam) SetScorerClause(clause *ScorerClause) *RecallParam {
 	p.ScorerClause = clause
+	return p
+}
+
+func (p *RecallParam) SetReturnCount(returnCount int) *RecallParam {
+	p.ReturnCount = returnCount
 	return p
 }
 
