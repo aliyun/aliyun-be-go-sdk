@@ -16,21 +16,19 @@ const (
 )
 
 type WriteRequest struct {
-	WriteType    WriteType         `json:"write_type"`
-	InstanceName string            `json:"instance_name"`
-	TableName    string            `json:"table_name"`
-	Contents     map[string]string `json:"contents"`
-	PrimaryKey   string            `json:"primary_key"`
-	QueryParams  map[string]string `json:"query_params"`
+	WriteType   WriteType         `json:"write_type"`
+	TableName   string            `json:"table_name"`
+	Contents    map[string]string `json:"contents"`
+	PrimaryKey  string            `json:"primary_key"`
+	QueryParams map[string]string `json:"query_params"`
 }
 
-func NewWriteRequest(writeType WriteType, instanceName string, tableName string, primaryKey string, contents map[string]string) *WriteRequest {
+func NewWriteRequest(writeType WriteType, tableName string, primaryKey string, contents map[string]string) *WriteRequest {
 	return &WriteRequest{WriteType: writeType,
-		InstanceName: instanceName,
-		TableName:    tableName,
-		PrimaryKey:   primaryKey,
-		Contents:     contents,
-		QueryParams:  map[string]string{},
+		TableName:   tableName,
+		PrimaryKey:  primaryKey,
+		Contents:    contents,
+		QueryParams: map[string]string{},
 	}
 }
 
@@ -40,10 +38,6 @@ func (r *WriteRequest) AddContent(key string, value string) *WriteRequest {
 }
 
 func (r *WriteRequest) Validate() error {
-	if r.InstanceName == "" {
-		return InvalidParamsError{"Instance name not set"}
-	}
-
 	if r.TableName == "" {
 		return InvalidParamsError{"Table name not set"}
 	}
@@ -116,7 +110,7 @@ func (r *WriteRequest) BuildUri() url.URL {
 	hashValue := h.Sum64()
 
 	query := uri.Query()
-	query.Add("table", r.InstanceName+"_"+r.TableName)
+	query.Add("table", r.TableName)
 	query.Add("h", strconv.Itoa(int(hashValue)))
 	query.Add("msg", builder.String())
 

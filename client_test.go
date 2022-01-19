@@ -62,7 +62,7 @@ func TestClient_Write_Failed(t *testing.T) {
 }
 
 func initWriteRequest() *WriteRequest {
-	request := NewWriteRequest(WriteTypeAdd, "testInstance", "tableTable", "id", map[string]string{})
+	request := NewWriteRequest(WriteTypeAdd, "tableTable", "id", map[string]string{})
 	request.AddContent("id", "10000")
 	return request
 }
