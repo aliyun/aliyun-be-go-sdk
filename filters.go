@@ -15,7 +15,7 @@ type Filter interface {
 type FilterOperator string
 
 const (
-	EQ FilterOperator = "=="
+	EQ FilterOperator = "="
 	NE FilterOperator = "!="
 	LT FilterOperator = "<"
 	GT FilterOperator = ">"
@@ -27,6 +27,7 @@ type FilterConnector string
 
 const (
 	FilterConnectorAnd FilterConnector = "AND"
+	FilterConnectorOR  FilterConnector = "OR"
 )
 
 type SingleFilter struct {
