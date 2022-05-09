@@ -25,11 +25,20 @@ func TestClient_ReadVectorFilterClause(t *testing.T) {
 
 func TestClient_Write(t *testing.T) {
 	tableName := "be-cn-7e22hft5l001_aime_example_expose_2"
-	request := NewWriteRequest(WriteTypeAdd, tableName, "user_id", map[string]string{})
-	request.AddContent("user_id", "u0003")
-	request.AddContent("item_id", "10001")
-	request.AddContent("time", "1640242662")
+	var content1 = map[string]string{}
+	content1["user_id"] = "u0003"
+	content1["item_id"] = "10001"
+	content1["time"] = "1640242663"
+
+	var content2 = map[string]string{}
+	content2["user_id"] = "u0003"
+	content2["item_id"] = "10002"
+	content2["time"] = "1640242664"
+
+	var contents = []map[string]string{content1, content2}
+	request := NewWriteRequest(WriteTypeAdd, tableName, "user_id", contents)
 	request.AddQueryParam("host", "10.0.133.234:80")
+
 	resp, err := client.Write(*request)
 	assert.Nil(t, err)
 
@@ -39,10 +48,14 @@ func TestClient_Write(t *testing.T) {
 
 func TestClient_Write_Delete(t *testing.T) {
 	tableName := "be-cn-7e22hft5l001_aime_example_expose_2"
-	request := NewWriteRequest(WriteTypeDelete, tableName, "user_id", map[string]string{})
-	request.AddContent("user_id", "u0003")
-	request.AddContent("item_id", "10001")
-	request.AddQueryParam("host", "10.0.133.234:80")
+	var content = map[string]string{}
+	content["user_id"] = "u0003"
+	content["item_id"] = "10001"
+	content["host"] = "10.0.133.234:80"
+	var contents = []map[string]string{content}
+
+	request := NewWriteRequest(WriteTypeDelete, tableName, "user_id", contents)
+
 	resp, err := client.Write(*request)
 	assert.Nil(t, err)
 

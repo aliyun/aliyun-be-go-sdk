@@ -79,35 +79,40 @@ func (c *Client) Write(writeRequest WriteRequest) (*Response, error) {
 	if vErr != nil {
 		return nil, vErr
 	}
-	buildUri := writeRequest.BuildUri()
-	uri := buildUri.RequestURI()
-	headers := map[string]string{}
 
-	httpResp, err := request(c, "GET", uri, headers, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer httpResp.Body.Close()
+	// TODO modify to batch write
+	for i := 0; i < len(writeRequest.Contents); i++ {
+		buildUri := writeRequest.BuildUri(i)
+		uri := buildUri.RequestURI()
+		headers := map[string]string{}
 
-	buf, ioErr := ioutil.ReadAll(httpResp.Body)
-	if ioErr != nil {
-		return nil, NewBadResponseError(ioErr.Error(), httpResp.Header, httpResp.StatusCode)
-	}
-	writeResult := WriteResult{}
-	if jErr := json.Unmarshal(buf, &writeResult); jErr != nil {
-		fmt.Println(jErr)
-		return nil, NewBadResponseError("Illegal writeResult:"+string(buf), httpResp.Header, httpResp.StatusCode)
-	}
+		httpResp, err := request(c, "GET", uri, headers, nil)
+		if err != nil {
+			return nil, err
+		}
+		// defer httpResp.Body.Close()
 
-	switch writeResult.Errno {
-	case 0:
-		return NewResponse(Result{}), nil
-	case 1:
-		return nil, NewBadResponseError(fmt.Sprintf("Failed to write, illegal reqeust body, errorCode[%v], resp:[%v]",
-			writeResult.Errno, string(buf)), httpResp.Header, httpResp.StatusCode)
-	default:
-		return nil, NewBadResponseError(fmt.Sprintf("Failed to write, errorCode[%v], resp:[%v]",
-			writeResult.Errno, string(buf)), httpResp.Header, httpResp.StatusCode)
+		buf, ioErr := ioutil.ReadAll(httpResp.Body)
+		httpResp.Body.Close()
+		if ioErr != nil {
+			return nil, NewBadResponseError(ioErr.Error(), httpResp.Header, httpResp.StatusCode)
+		}
+		writeResult := WriteResult{}
+		if jErr := json.Unmarshal(buf, &writeResult); jErr != nil {
+			fmt.Println(jErr)
+			return nil, NewBadResponseError("Illegal writeResult:"+string(buf), httpResp.Header, httpResp.StatusCode)
+		}
+		switch writeResult.Errno {
+		case 0:
+			continue
+		case 1:
+			return nil, NewBadResponseError(fmt.Sprintf("Failed to write, illegal reqeust body, errorCode[%v], resp:[%v]",
+				writeResult.Errno, string(buf)), httpResp.Header, httpResp.StatusCode)
+		default:
+			return nil, NewBadResponseError(fmt.Sprintf("Failed to write, errorCode[%v], resp:[%v]",
+				writeResult.Errno, string(buf)), httpResp.Header, httpResp.StatusCode)
+		}
 	}
+	return NewResponse(Result{}), nil
 
 }

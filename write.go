@@ -16,25 +16,20 @@ const (
 )
 
 type WriteRequest struct {
-	WriteType   WriteType         `json:"write_type"`
-	TableName   string            `json:"table_name"`
-	Contents    map[string]string `json:"contents"`
-	PrimaryKey  string            `json:"primary_key"`
-	QueryParams map[string]string `json:"query_params"`
+	WriteType   WriteType           `json:"write_type"`
+	TableName   string              `json:"table_name"`
+	Contents    []map[string]string `json:"contents"`
+	PrimaryKey  string              `json:"primary_key"`
+	QueryParams map[string]string   `json:"query_params"`
 }
 
-func NewWriteRequest(writeType WriteType, tableName string, primaryKey string, contents map[string]string) *WriteRequest {
+func NewWriteRequest(writeType WriteType, tableName string, primaryKey string, contents []map[string]string) *WriteRequest {
 	return &WriteRequest{WriteType: writeType,
 		TableName:   tableName,
 		PrimaryKey:  primaryKey,
 		Contents:    contents,
 		QueryParams: map[string]string{},
 	}
-}
-
-func (r *WriteRequest) AddContent(key string, value string) *WriteRequest {
-	r.Contents[key] = value
-	return r
 }
 
 func (r *WriteRequest) Validate() error {
@@ -48,12 +43,14 @@ func (r *WriteRequest) Validate() error {
 		return InvalidParamsError{"Partition key not set"}
 	}
 	primaryKeyExist := false
-	for k, v := range r.Contents {
-		if k == "" || v == "" {
-			return InvalidParamsError{fmt.Sprintf("Key or value is empty for kv pair[%s][%s]", k, v)}
-		}
-		if k == r.PrimaryKey {
-			primaryKeyExist = true
+	for _, content := range r.Contents {
+		for k, v := range content {
+			if k == "" || v == "" {
+				return InvalidParamsError{fmt.Sprintf("Key or value is empty for kv pair[%s][%s]", k, v)}
+			}
+			if k == r.PrimaryKey {
+				primaryKeyExist = true
+			}
 		}
 	}
 	if !primaryKeyExist {
@@ -72,7 +69,7 @@ func (r *WriteRequest) SetQueryParams(params map[string]string) *WriteRequest {
 	return r
 }
 
-func (r *WriteRequest) BuildUri() url.URL {
+func (r *WriteRequest) BuildUri(index int) url.URL {
 	uri := url.URL{Path: "sendmsg"}
 
 	var separator byte = 31
@@ -80,7 +77,8 @@ func (r *WriteRequest) BuildUri() url.URL {
 
 	var contentBuilder strings.Builder
 	var primaryKeyValue string
-	for k, v := range r.Contents {
+	var content = r.Contents[index]
+	for k, v := range content {
 		if r.PrimaryKey == k {
 			primaryKeyValue = v
 			continue
