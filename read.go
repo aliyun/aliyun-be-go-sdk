@@ -157,10 +157,11 @@ type ReadRequest struct {
 	RecallParams   []RecallParam     `json:"recall_params"`
 	ExposureClause *ExposureClause   `json:"exposure_clause"`
 	QueryParams    map[string]string `json:"query_params"`
+	IsRawRequest   bool              `json:"is_raw_request"`
 }
 
 func NewReadRequest(bizName string, returnCount int) *ReadRequest {
-	return &ReadRequest{ReturnCount: returnCount, BizName: bizName, QueryParams: map[string]string{}}
+	return &ReadRequest{ReturnCount: returnCount, BizName: bizName, QueryParams: map[string]string{}, IsRawRequest: false}
 }
 
 func (r *ReadRequest) Validate() error {
@@ -169,6 +170,9 @@ func (r *ReadRequest) Validate() error {
 	}
 	if r.BizName == "" {
 		return InvalidParamsError{"Empty biz name"}
+	}
+	if r.IsRawRequest {
+		return nil
 	}
 	if len(r.RecallParams) == 0 {
 		return InvalidParamsError{"Empty recall params"}
@@ -251,7 +255,7 @@ func (r *ReadRequest) BuildUri() url.URL {
 
 	if len(r.QueryParams) != 0 {
 		for k, v := range r.QueryParams {
-			query[k] = v
+			query[k] = url.QueryEscape(v)
 		}
 	}
 

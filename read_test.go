@@ -62,3 +62,12 @@ func TestReadRequest_Validate(t *testing.T) {
 	request.AddRecallParam(emptyNameRecall)
 	CheckRequestNotValidate(t, request)
 }
+
+func TestReadRequest_ValidateRaw(t *testing.T) {
+	request := NewReadRequest("testBiz", 10)
+	request.IsRawRequest = true
+	request.SetQueryParams(map[string]string{"key1": "value", "key2": "===", "key3": "\"", "key4": "!", "outfmt": "pb2"})
+	CheckRequestValidate(t, request)
+	uri := request.BuildUri()
+	fmt.Printf("Url:%s\n", uri.RequestURI())
+}
