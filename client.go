@@ -1,6 +1,7 @@
 package be
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -58,7 +59,9 @@ func (c *Client) Read(readRequest ReadRequest) (*Response, error) {
 	}
 
 	readResult := ReadResult{}
-	if jErr := json.Unmarshal(buf, &readResult); jErr != nil {
+	decoder := json.NewDecoder(bytes.NewReader(buf))
+	decoder.UseNumber()
+	if jErr := decoder.Decode(&readResult); jErr != nil {
 		fmt.Println(jErr)
 		return nil, NewBadResponseError("Illegal readResult:"+string(buf), httpResp.Header, httpResp.StatusCode)
 	}
