@@ -255,7 +255,7 @@ func (r *ReadRequest) BuildUri() url.URL {
 
 	if len(r.QueryParams) != 0 {
 		for k, v := range r.QueryParams {
-			query[k] = url.QueryEscape(v)
+			query[k] = v
 		}
 	}
 
