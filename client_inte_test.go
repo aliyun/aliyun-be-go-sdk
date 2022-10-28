@@ -2,17 +2,24 @@ package be
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
+	"reflect"
 	"testing"
 )
 
-var client = NewClient("http://curl-proxy-vpc-pre.airec.aliyun-inc.com", "test", "test")
+//var client = NewClient("http://curl-proxy-vpc-pre.airec.aliyun-inc.com", "test", "test")
+var client = NewClient("http://curl-proxy-cn-hangzhou.vpc.airec.aliyun-inc.com", "test", "test")
 var queryParams = map[string]string{}
 
 func TestMain(m *testing.M) {
-	queryParams["host"] = "10.2.207.14:16832"
+	queryParams["host"] = "10.0.187.27:18032"
 	m.Run()
+}
+
+func TestShihuo_Read(t *testing.T) {
+	inteTestRead(t, "testdata/test_requests/shihuo_request.json")
 }
 
 func TestClient_ReadVectorFilterClause(t *testing.T) {
@@ -72,11 +79,25 @@ func inteTestRead(t *testing.T, paramPath string) {
 	assert.Nil(t, jErr)
 
 	readRequest := params.Request
-	readRequest.QueryParams = queryParams
+	for k, v := range queryParams {
+		readRequest.QueryParams[k] = v
+	}
 
 	resp, err := client.Read(*readRequest)
 	assert.Nil(t, err)
 	PrintResult(resp)
+	item := resp.Result.MatchItems.getItems(0)
+	itemId := item["item_id"]
+	intValue, _ := itemId.(json.Number).Int64()
+	fmt.Printf("type:%s value:%d\n", reflect.TypeOf(intValue), intValue)
+
+	tagsRules := item["tag_rules"]
+	fmt.Printf("type:%s， value:%s\n", reflect.TypeOf(tagsRules), tagsRules)
+
+	tags := item["new_style_tags"]
+	fmt.Printf("type:%s\n", reflect.TypeOf(tags))
+
+	//fmt.Printf("type:%s\n", reflect.TypeOf(.Int64()))
 
 	checkers := params.Checkers
 	if len(checkers) == 0 {
