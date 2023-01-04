@@ -5,14 +5,27 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"time"
 )
 
 var (
 	defaultRequestTimeout = 3 * time.Second
-	defaultHttpClient     = &http.Client{
-		Timeout: defaultRequestTimeout,
+	defaultTransport      = &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   100 * time.Millisecond,
+			KeepAlive: 5 * time.Minute,
+		}).DialContext,
+		MaxIdleConns:          1000,
+		MaxIdleConnsPerHost:   1000,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 10 * time.Second,
+	}
+	defaultHttpClient = &http.Client{
+		Timeout:   defaultRequestTimeout,
+		Transport: defaultTransport,
 	}
 )
 
