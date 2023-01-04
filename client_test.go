@@ -2,11 +2,13 @@ package be
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func TestClient_Read_Success(t *testing.T) {
@@ -59,6 +61,32 @@ func TestClient_Write_Failed(t *testing.T) {
 	respErr := err.(*BadResponseError)
 	assert.Equal(t, tResp.Code, respErr.HTTPCode)
 	PrintResult(err)
+}
+
+func TestClient_WithRequestTimeout(t *testing.T) {
+	testClient := NewClient("http://127.0.0.1", "test", "test")
+	timeout := 10 * time.Second
+	testClient.WithRequestTimeout(timeout)
+
+	assert.Equal(t, timeout, testClient.httpClient.Timeout)
+	fmt.Println(testClient.httpClient.Timeout)
+}
+
+func TestClient_WithConnectionSize(t *testing.T) {
+	testClient := NewClient("http://127.0.0.1", "test", "test")
+	timeout := 10 * time.Second
+	connectionSize := 333
+
+	testClient.WithRequestTimeout(timeout)
+	testClient.WithConnectionSize(connectionSize)
+
+	transportPointer, ok := testClient.httpClient.Transport.(*http.Transport)
+	if !ok {
+		panic(fmt.Sprintf("httpClient.Transport not an *http.Transport"))
+	}
+	fmt.Printf("timeout: %v, connectionSize: %v", testClient.httpClient.Timeout, transportPointer.MaxIdleConns)
+	assert.Equal(t, timeout, testClient.httpClient.Timeout)
+	assert.Equal(t, connectionSize, transportPointer.MaxIdleConns)
 }
 
 func initWriteRequest() *WriteRequest {

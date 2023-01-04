@@ -26,12 +26,24 @@ func NewClient(endpoint string, userName string, passWord string) *Client {
 
 // WithRequestTimeout with custom timeout for a request
 func (c *Client) WithRequestTimeout(timeout time.Duration) *Client {
-	if c.httpClient == defaultHttpClient {
-		c.httpClient = &http.Client{
-			Timeout: timeout,
-		}
-	} else {
-		c.httpClient.Timeout = timeout
+	c.httpClient.Timeout = timeout
+	return c
+}
+
+func (c *Client) WithConnectionSize(connectionCount int) *Client {
+	transportTripper := c.httpClient.Transport
+	transportPointer, ok := transportTripper.(*http.Transport)
+	if !ok {
+		panic(fmt.Sprintf("httpClient.Transport not an *http.Transport"))
+	}
+
+	transport := *transportPointer
+	transport.MaxIdleConnsPerHost = connectionCount
+	transport.MaxIdleConns = connectionCount
+
+	c.httpClient = &http.Client{
+		Timeout:   c.httpClient.Timeout,
+		Transport: &transport,
 	}
 	return c
 }
