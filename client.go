@@ -3,24 +3,50 @@ package be
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/rcrowley/go-metrics"
 	"io/ioutil"
 	"net/http"
 	"time"
 )
 
 type Client struct {
-	Endpoint   string
-	UserName   string
-	PassWord   string
-	httpClient *http.Client
+	Endpoint     string
+	UserName     string
+	PassWord     string
+	httpClient   *http.Client
+	enableMetric bool
+	beMetrics    Metrics
+}
+
+type Metrics struct {
+	readRequestTimer metrics.Timer
+	readParseTimer   metrics.Timer
+	readIoTimer      metrics.Timer
 }
 
 func NewClient(endpoint string, userName string, passWord string) *Client {
 	return &Client{
-		Endpoint:   endpoint,
-		UserName:   userName,
-		PassWord:   passWord,
-		httpClient: defaultHttpClient,
+		Endpoint:     endpoint,
+		UserName:     userName,
+		PassWord:     passWord,
+		httpClient:   defaultHttpClient,
+		enableMetric: false,
+	}
+}
+
+func (c *Client) initMetrics() {
+	if c.enableMetric {
+		requestTimer := metrics.NewTimer()
+		parseTimer := metrics.NewTimer()
+		readIoTimer := metrics.NewTimer()
+		metrics.GetOrRegister("timer.request", requestTimer)
+		metrics.GetOrRegister("timer.parse", parseTimer)
+		metrics.GetOrRegister("timer.readIo", readIoTimer)
+		c.beMetrics = Metrics{
+			readRequestTimer: requestTimer,
+			readParseTimer:   parseTimer,
+			readIoTimer:      readIoTimer,
+		}
 	}
 }
 
@@ -58,21 +84,41 @@ func (c *Client) Read(readRequest ReadRequest) (*Response, error) {
 	uri := buildUri.RequestURI()
 	headers := map[string]string{}
 
+	start := time.Now()
 	httpResp, err := request(c, "GET", uri, headers, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer httpResp.Body.Close()
+	if c.enableMetric {
+		c.beMetrics.readRequestTimer.Update(time.Since(start))
+	}
 
+	start = time.Now()
 	buf, ioErr := ioutil.ReadAll(httpResp.Body)
 	if ioErr != nil {
 		return nil, NewBadResponseError(ioErr.Error(), httpResp.Header, httpResp.StatusCode)
 	}
+	if c.enableMetric {
+		c.beMetrics.readIoTimer.Update(time.Since(start))
+	}
 
-	readResult := ReadResult{}
-	if jErr := json.Unmarshal(buf, &readResult); jErr != nil {
+	start = time.Now()
+
+	var readParser ReadParser
+	if readRequest.OutFmt == "fb2" {
+		readParser = &defaultFbReadParser
+	} else {
+		readParser = &defaultJsonReadParser
+	}
+
+	var readResult = ReadResult{}
+	if jErr := readParser.parse(buf, &readResult); jErr != nil {
 		fmt.Println(jErr)
 		return nil, NewBadResponseError("Illegal readResult:"+string(buf), httpResp.Header, httpResp.StatusCode)
+	}
+	if c.enableMetric {
+		c.beMetrics.readParseTimer.Update(time.Since(start))
 	}
 
 	var resp *Response

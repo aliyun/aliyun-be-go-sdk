@@ -3,10 +3,15 @@ package be
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/rcrowley/go-metrics"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
+	"log"
+	"os"
 	"reflect"
+	"strings"
 	"testing"
+	"time"
 )
 
 //var client = NewClient("http://curl-proxy-vpc-pre.airec.aliyun-inc.com", "test", "test")
@@ -109,6 +114,42 @@ func inteTestRead(t *testing.T, paramPath string) {
 	}
 }
 
+func TestReadBenchmark(b *testing.T) {
+	client = NewClient("http://shihuo-pre.public.be.aliyuncs.com", "aliyun-rec", "Rec1234#")
+	client.enableMetric = true
+	client.initMetrics()
+	timer := metrics.NewTimer()
+	metrics.GetOrRegister("timer.read", timer)
+	go metrics.Log(metrics.DefaultRegistry, time.Second, log.Default())
+
+	params := readParams("testdata/test_requests/param.txt")
+	request := NewReadRequest("shihuo_common", 2000)
+	request.IsRawRequest = true
+	request.SetQueryParams(params)
+	request.OutFmt = "fb2"
+
+	for i := 0; i < 1000; i++ {
+		start := time.Now()
+		_, err := client.Read(*request)
+		check(err)
+		timer.Update(time.Since(start))
+	}
+}
+
+func TestGetByPb(t *testing.T) {
+	client = NewClient("http://shihuo-pre.public.be.aliyuncs.com", "aliyun-rec", "Rec1234#")
+	params := readParams("testdata/test_requests/param.txt")
+	request := NewReadRequest("shihuo_common", 2000)
+	request.IsRawRequest = true
+	request.SetQueryParams(params)
+	request.OutFmt = "json2"
+
+	resp, err := client.Read(*request)
+	check(err)
+	PrintResult(resp)
+
+}
+
 type TestReadParams struct {
 	Request  *ReadRequest  `json:"request"`
 	Checkers []TestChecker `json:"checkers"`
@@ -135,4 +176,24 @@ func (c TestChecker) check(items *MatchItem) bool {
 		}
 	}
 	return true
+}
+
+func readParams(filePath string) map[string]string {
+	content, err := os.ReadFile(filePath)
+	check(err)
+	paramsString := string(content)
+	kvPairs := strings.Split(paramsString, "&")
+	params := make(map[string]string)
+	for _, kvPair := range kvPairs {
+		kv := strings.Split(kvPair, "=")
+		params[kv[0]] = kv[1]
+	}
+	return params
+}
+
+func check(e error) {
+	if e != nil {
+		fmt.Println(e)
+		panic(e)
+	}
 }
