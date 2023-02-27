@@ -14,7 +14,7 @@ type Client struct {
 	UserName     string
 	PassWord     string
 	httpClient   *http.Client
-	enableMetric bool
+	EnableMetric bool
 	beMetrics    Metrics
 }
 
@@ -30,12 +30,12 @@ func NewClient(endpoint string, userName string, passWord string) *Client {
 		UserName:     userName,
 		PassWord:     passWord,
 		httpClient:   defaultHttpClient,
-		enableMetric: false,
+		EnableMetric: false,
 	}
 }
 
-func (c *Client) initMetrics() {
-	if c.enableMetric {
+func (c *Client) InitMetrics() {
+	if c.EnableMetric {
 		requestTimer := metrics.NewTimer()
 		parseTimer := metrics.NewTimer()
 		readIoTimer := metrics.NewTimer()
@@ -90,7 +90,7 @@ func (c *Client) Read(readRequest ReadRequest) (*Response, error) {
 		return nil, err
 	}
 	defer httpResp.Body.Close()
-	if c.enableMetric {
+	if c.EnableMetric {
 		c.beMetrics.readRequestTimer.Update(time.Since(start))
 	}
 
@@ -99,14 +99,14 @@ func (c *Client) Read(readRequest ReadRequest) (*Response, error) {
 	if ioErr != nil {
 		return nil, NewBadResponseError(ioErr.Error(), httpResp.Header, httpResp.StatusCode)
 	}
-	if c.enableMetric {
+	if c.EnableMetric {
 		c.beMetrics.readIoTimer.Update(time.Since(start))
 	}
 
 	start = time.Now()
 
 	var readParser ReadParser
-	if readRequest.OutFmt == "fb2" {
+	if readRequest.QueryParams["outfmt"] == "fb2" {
 		readParser = &defaultFbReadParser
 	} else {
 		readParser = &defaultJsonReadParser
@@ -117,7 +117,7 @@ func (c *Client) Read(readRequest ReadRequest) (*Response, error) {
 		fmt.Println(jErr)
 		return nil, NewBadResponseError("Illegal readResult:"+string(buf), httpResp.Header, httpResp.StatusCode)
 	}
-	if c.enableMetric {
+	if c.EnableMetric {
 		c.beMetrics.readParseTimer.Update(time.Since(start))
 	}
 

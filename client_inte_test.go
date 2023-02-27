@@ -116,8 +116,8 @@ func inteTestRead(t *testing.T, paramPath string) {
 
 func TestReadBenchmark(b *testing.T) {
 	client = NewClient("http://shihuo-pre.public.be.aliyuncs.com", "aliyun-rec", "Rec1234#")
-	client.enableMetric = true
-	client.initMetrics()
+	client.EnableMetric = true
+	client.InitMetrics()
 	timer := metrics.NewTimer()
 	metrics.GetOrRegister("timer.read", timer)
 	go metrics.Log(metrics.DefaultRegistry, time.Second, log.Default())
