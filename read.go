@@ -158,6 +158,7 @@ type ReadRequest struct {
 	ExposureClause *ExposureClause   `json:"exposure_clause"`
 	QueryParams    map[string]string `json:"query_params"`
 	IsRawRequest   bool              `json:"is_raw_request"`
+	OutFmt         string            `json:"out_fmt"`
 }
 
 func NewReadRequest(bizName string, returnCount int) *ReadRequest {
@@ -234,7 +235,11 @@ func (r *ReadRequest) BuildUri() url.URL {
 	query["p"] = r.BizName
 	query["s"] = r.BizName
 	query["return_count"] = strconv.Itoa(r.ReturnCount)
-	query["outfmt"] = "json2"
+	if r.OutFmt != "" {
+		query["outfmt"] = r.OutFmt
+	} else {
+		query["outfmt"] = "fb2"
+	}
 
 	if r.FilterClause != nil && r.FilterClause.BuildParams() != "" {
 		query["filter_rule"] = r.FilterClause.BuildParams()
