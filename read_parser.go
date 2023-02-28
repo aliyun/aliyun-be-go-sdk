@@ -1,9 +1,9 @@
 package be
 
 import (
-	"aliyun-be-go-sdk/be_fb"
 	"encoding/json"
 	"fmt"
+	"github.com/aliyun/aliyun-be-go-sdk/be_fb"
 	flatbuffers "github.com/google/flatbuffers/go"
 )
 
