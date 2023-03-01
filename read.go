@@ -162,7 +162,7 @@ type ReadRequest struct {
 }
 
 func NewReadRequest(bizName string, returnCount int) *ReadRequest {
-	return &ReadRequest{ReturnCount: returnCount, BizName: bizName, QueryParams: map[string]string{}, IsRawRequest: false}
+	return &ReadRequest{ReturnCount: returnCount, BizName: bizName, QueryParams: map[string]string{}, IsRawRequest: false, OutFmt: "fb2"}
 }
 
 func (r *ReadRequest) Validate() error {
@@ -235,10 +235,10 @@ func (r *ReadRequest) BuildUri() url.URL {
 	query["p"] = r.BizName
 	query["s"] = r.BizName
 	query["return_count"] = strconv.Itoa(r.ReturnCount)
-	if r.OutFmt != "" {
-		query["outfmt"] = r.OutFmt
-	} else {
-		query["outfmt"] = "fb2"
+
+	_, exist := r.QueryParams["outfmt"]
+	if !exist {
+		r.QueryParams["outfmt"] = r.OutFmt
 	}
 
 	if r.FilterClause != nil && r.FilterClause.BuildParams() != "" {
