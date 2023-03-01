@@ -3,6 +3,7 @@ module aliyun-be-go-sdk
 go 1.17
 
 require (
+	github.com/aliyun/aliyun-be-go-sdk v0.0.0-20230228025150-3bd44099c86b
 	github.com/go-kit/kit v0.12.0
 	github.com/google/flatbuffers v23.1.21+incompatible
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475

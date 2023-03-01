@@ -1,5 +1,7 @@
 github.com/BurntSushi/toml v0.4.1 h1:GaI7EiDXDRfa8VshkTj7Fym7ha+y8/XxIgD2okUIjLw=
 github.com/BurntSushi/toml v0.4.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
+github.com/aliyun/aliyun-be-go-sdk v0.0.0-20230228025150-3bd44099c86b h1:2SU+Ozdk+w+BA2rkfqBzwWdkN0TCAzRAbjZapW0e46c=
+github.com/aliyun/aliyun-be-go-sdk v0.0.0-20230228025150-3bd44099c86b/go.mod h1:wj5PXdQyCNS9n4Og3CH03MAxhuNJM9OrD8o5hoCMXEM=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/go-kit/kit v0.12.0 h1:e4o3o3IsBfAKQh5Qbbiqyfu97Ku7jrO/JbohvztANh4=
