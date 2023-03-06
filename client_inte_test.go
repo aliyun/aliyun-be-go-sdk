@@ -138,16 +138,16 @@ func TestReadBenchmark(b *testing.T) {
 
 func TestGetByPb(t *testing.T) {
 	client = NewClient("http://shihuo-pre.public.be.aliyuncs.com", "aliyun-rec", "Rec1234#")
-	params := readParams("testdata/test_requests/param.txt")
+	//params := readParams("testdata/test_requests/param.txt")
+	params := readParams("testdata/test_requests/empty_result_param.txt")
 	request := NewReadRequest("shihuo_common", 2000)
 	request.IsRawRequest = true
 	request.SetQueryParams(params)
-	request.OutFmt = "json2"
+	request.OutFmt = "fb2"
 
 	resp, err := client.Read(*request)
 	check(err)
 	PrintResult(resp)
-
 }
 
 type TestReadParams struct {

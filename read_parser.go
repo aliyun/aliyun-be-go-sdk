@@ -2,6 +2,7 @@ package be
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/aliyun/aliyun-be-go-sdk/be_fb"
 	flatbuffers "github.com/google/flatbuffers/go"
@@ -31,9 +32,19 @@ func (p *JsonReadParser) parse(buf []byte, readResult *ReadResult) error {
 type FbReadParser struct {
 }
 
-func (p *FbReadParser) parse(buf []byte, readResult *ReadResult) error {
+func (p *FbReadParser) parse(buf []byte, readResult *ReadResult) (err error) {
+	defer func() {
+		if e := recover(); e != nil {
+			fmt.Println("failed to parse result using fb:", e)
+			err = errors.New("failed to parse result using fb")
+		}
+	}()
+
 	result := be_fb.GetRootAsResult(buf, 0)
 	records := result.Records(nil)
+	if records == nil {
+		return errors.New("failed to parse result using fb")
+	}
 
 	readResult.MatchItems = MatchItem{}
 
