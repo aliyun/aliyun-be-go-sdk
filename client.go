@@ -103,6 +103,10 @@ func (c *Client) Read(readRequest ReadRequest) (*Response, error) {
 		c.beMetrics.readIoTimer.Update(time.Since(start))
 	}
 
+	if httpResp.StatusCode != 200 {
+		return nil, NewBadResponseError("Illegal response, status:"+httpResp.Status, httpResp.Header, httpResp.StatusCode)
+	}
+
 	start = time.Now()
 
 	var readParser ReadParser
