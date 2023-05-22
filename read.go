@@ -159,10 +159,11 @@ type ReadRequest struct {
 	QueryParams    map[string]string `json:"query_params"`
 	IsRawRequest   bool              `json:"is_raw_request"`
 	OutFmt         string            `json:"out_fmt"`
+	IsPost         bool              `json:"is_post"`
 }
 
 func NewReadRequest(bizName string, returnCount int) *ReadRequest {
-	return &ReadRequest{ReturnCount: returnCount, BizName: bizName, QueryParams: map[string]string{}, IsRawRequest: false, OutFmt: "fb2"}
+	return &ReadRequest{ReturnCount: returnCount, BizName: bizName, QueryParams: map[string]string{}, IsRawRequest: false, OutFmt: "fb2", IsPost: false}
 }
 
 func (r *ReadRequest) Validate() error {
@@ -227,9 +228,7 @@ func (r *ReadRequest) SetQueryParams(params map[string]string) *ReadRequest {
 	return r
 }
 
-func (r *ReadRequest) BuildUri() url.URL {
-	uri := url.URL{Path: "be"}
-
+func (r *ReadRequest) BuildParams() string {
 	query := map[string]string{}
 	query["biz_name"] = "searcher"
 	query["p"] = r.BizName
@@ -268,6 +267,14 @@ func (r *ReadRequest) BuildUri() url.URL {
 	for k, v := range query {
 		params = append(params, k+"="+v)
 	}
-	uri.RawQuery = strings.Join(params[:], "&")
+	return strings.Join(params[:], "&")
+}
+
+func (r *ReadRequest) BuildUri() url.URL {
+	uri := url.URL{Path: "be"}
+	if r.IsPost {
+		return uri
+	}
+	uri.RawQuery = r.BuildParams()
 	return uri
 }
