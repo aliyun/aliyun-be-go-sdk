@@ -85,7 +85,15 @@ func (c *Client) Read(readRequest ReadRequest) (*Response, error) {
 	headers := map[string]string{}
 
 	start := time.Now()
-	httpResp, err := request(c, "GET", uri, headers, nil)
+
+	var httpResp *http.Response = nil
+	var err error
+	if readRequest.IsPost {
+		httpResp, err = request(c, "POST", uri, headers, []byte(readRequest.BuildParams()))
+	} else {
+		httpResp, err = request(c, "GET", uri, headers, nil)
+	}
+
 	if err != nil {
 		return nil, err
 	}
