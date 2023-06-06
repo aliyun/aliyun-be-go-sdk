@@ -54,6 +54,15 @@ func (p *FbReadParser) parse(buf []byte, readResult *ReadResult) (err error) {
 	}
 	readResult.ErrorCode = int(result.ErrorCode())
 	readResult.ErrorMessage = string(result.ErrorMessage())
+	traceInfoBytes := result.TraceInfo()
+	if traceInfoBytes != nil {
+		var traceInfo map[string]interface{}
+		err := json.Unmarshal(traceInfoBytes, &traceInfo)
+		if err != nil {
+			return err
+		}
+		readResult.TraceInfo = traceInfo
+	}
 	readResult.MatchItems.FieldNames = fieldNames
 	readResult.MatchItems.FieldValues = make([][]interface{}, records.DocCount())
 

@@ -135,7 +135,7 @@ func (c *Client) Read(readRequest ReadRequest) (*Response, error) {
 
 	var resp *Response
 	if readResult.ErrorCode == 0 {
-		result := Result{MatchItems: &readResult.MatchItems}
+		result := Result{MatchItems: &readResult.MatchItems, TraceInfo: &readResult.TraceInfo}
 		resp = NewResponse(result)
 	} else {
 		return nil, NewBadResponseError(fmt.Sprintf("Failed to read, errorCode[%v], message:%v",

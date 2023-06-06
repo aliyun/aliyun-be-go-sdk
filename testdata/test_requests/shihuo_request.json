@@ -1,0 +1,10 @@
+{
+  "request": {
+    "biz_name": "shihuo_common",
+    "return_count": 10,
+    "is_raw_request": true,
+    "query_params": {
+      "etrec_i2i_list": "100720:1,101479:1"
+    }
+  }
+}
