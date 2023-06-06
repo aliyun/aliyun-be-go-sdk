@@ -31,9 +31,10 @@ func (m MatchItem) getResultCount() int {
 }
 
 type ReadResult struct {
-	ErrorCode    int       `json:"error_code"`
-	ErrorMessage string    `json:"error_message"`
-	MatchItems   MatchItem `json:"match_items"`
+	ErrorCode    int         `json:"error_code"`
+	ErrorMessage string      `json:"error_message"`
+	MatchItems   MatchItem   `json:"match_items"`
+	TraceInfo    interface{} `json:"trace_info"`
 }
 
 type WriteResult struct {
@@ -41,5 +42,6 @@ type WriteResult struct {
 }
 
 type Result struct {
-	MatchItems *MatchItem `json:"match_items"`
+	MatchItems *MatchItem   `json:"match_items"`
+	TraceInfo  *interface{} `json:"trace_info"`
 }
