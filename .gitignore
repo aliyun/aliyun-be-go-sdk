@@ -1,2 +1,4 @@
 .git/
 .idea/
+client_inte_test.go
+testdata/
