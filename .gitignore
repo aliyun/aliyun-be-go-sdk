@@ -19,3 +19,5 @@
 
 client_inte_test.go
 testdata/
+go.mod
+go.sum
